@@ -1,0 +1,656 @@
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Nuestros Recuerdos 💗</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #ffe0ec, #fff5f8);
+  color: #7a2849;
+  text-align: center;
+}
+
+.contenedor {
+  max-width: 900px;
+  margin: auto;
+  padding: 25px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 5px 20px #e9a8c4;
+}
+
+h1, h2, h3 {
+  color: #d63384;
+}
+
+#foto {
+  width: 100%;
+  max-width: 350px;
+  height: 350px;
+  object-fit: contain;
+  border-radius: 18px;
+  margin: 15px 0;
+  background: #ffeaf2;
+}
+
+#mensaje {
+  font-size: 18px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+input, textarea {
+  width: 100%;
+  max-width: 500px;
+  padding: 12px;
+  margin: 8px 0;
+  border: 1px solid #f0a6c8;
+  border-radius: 10px;
+  font-size: 16px;
+}
+
+textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+button {
+  padding: 11px 16px;
+  margin: 5px;
+  border: none;
+  border-radius: 10px;
+  background: #e75495;
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #c92d75;
+}
+
+.botonEliminar {
+  background: #b4234d;
+}
+
+#galeria {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.tarjeta {
+  padding: 12px;
+  background: #fff0f6;
+  border-radius: 15px;
+  overflow-wrap: anywhere;
+}
+
+.tarjeta img {
+  width: 100%;
+  height: 200px;
+  object-fit: contain;
+  background: #ffe0ec;
+  border-radius: 10px;
+}
+
+#mensajesGuardados {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.mensajeGuardado {
+  background: #fff0f6;
+  border-radius: 10px;
+  padding: 12px;
+  margin: 10px 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.oculto {
+  display: none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="contenedor">
+
+  <h1>Para el amor de mi vida 💗</h1>
+
+  <p>Un lugar para guardar nuestros momentos más bonitos. 💕</p>
+
+  <img id="foto" src="" alt="Nuestro recuerdo">
+
+  <h2 id="titulo">Nuestro recuerdo 💖</h2>
+
+  <p id="mensaje">
+    Cada momento contigo es especial. Te quiero muchísimo. 💗
+  </p>
+
+  <button onclick="anterior()">⬅️ Anterior</button>
+  <button onclick="siguiente()">Siguiente ➡️</button>
+
+  <hr>
+
+  <h2>Editar nuestro recuerdo 💌</h2>
+
+  <input
+    type="text"
+    id="nuevoTitulo"
+    placeholder="Escribe el título"
+  >
+
+  <textarea
+    id="nuevoMensaje"
+    placeholder="Escribe tu mensaje de amor"
+  ></textarea>
+
+  <button onclick="guardarTexto()">Guardar cambios 💗</button>
+
+  <hr>
+
+  <h2>Agregar una foto 📸</h2>
+
+  <input
+    type="file"
+    id="selectorFoto"
+    accept="image/*"
+  >
+
+  <input
+    type="text"
+    id="tituloFoto"
+    placeholder="Título de la foto"
+  >
+
+  <textarea
+    id="mensajeFoto"
+    placeholder="Escribe algo bonito sobre esta foto"
+  ></textarea>
+
+  <button onclick="agregarFoto()">Agregar foto 💕</button>
+
+  <button
+    class="botonEliminar"
+    onclick="eliminarFotoActual()"
+  >
+    Eliminar foto actual 🗑️
+  </button>
+
+  <hr>
+
+  <h2>Guardar un mensaje especial 💌</h2>
+
+  <textarea
+    id="mensajeEspecial"
+    placeholder="Escribe un mensaje que quieras guardar"
+  ></textarea>
+
+  <button onclick="guardarMensaje()">Guardar mensaje 💗</button>
+
+  <button onclick="verMensajes()">Ver mensajes guardados 💌</button>
+
+  <div id="mensajesGuardados" class="oculto"></div>
+
+  <hr>
+
+  <h2>Nuestros recuerdos juntos 💞</h2>
+
+  <p id="contador"></p>
+
+  <div id="galeria"></div>
+
+</div>
+
+<script>
+
+// CARGAR FOTOS GUARDADAS
+
+let fotos = [];
+
+try {
+  fotos = JSON.parse(localStorage.getItem("recuerdosAmor")) || [];
+} catch (error) {
+  fotos = [];
+}
+
+let indiceActual = 0;
+
+
+// CARGAR MENSAJES GUARDADOS
+
+let mensajes = [];
+
+try {
+  mensajes = JSON.parse(localStorage.getItem("mensajesAmor")) || [];
+} catch (error) {
+  mensajes = [];
+}
+
+
+// GUARDAR FOTOS
+
+function guardarFotos() {
+  try {
+    localStorage.setItem(
+      "recuerdosAmor",
+      JSON.stringify(fotos)
+    );
+
+    return true;
+
+  } catch (error) {
+    alert("No se pudieron guardar las fotos. Intenta con imágenes más pequeñas.");
+    return false;
+  }
+}
+
+
+// MOSTRAR FOTO ACTUAL
+
+function mostrar() {
+  const imagen = document.getElementById("foto");
+  const titulo = document.getElementById("titulo");
+  const mensaje = document.getElementById("mensaje");
+
+  if (fotos.length === 0) {
+    imagen.src = "";
+    titulo.textContent = "Nuestros recuerdos 💗";
+    mensaje.textContent = "Agrega una foto para comenzar nuestra historia. 💕";
+
+    indiceActual = 0;
+
+    mostrarGaleria();
+    return;
+  }
+
+  if (indiceActual >= fotos.length) {
+    indiceActual = fotos.length - 1;
+  }
+
+  if (indiceActual < 0) {
+    indiceActual = 0;
+  }
+
+  const recuerdo = fotos[indiceActual];
+
+  imagen.src = recuerdo.foto;
+
+  titulo.textContent =
+    recuerdo.titulo || "Nuestro recuerdo 💗";
+
+  mensaje.textContent =
+    recuerdo.texto || "";
+
+  document.getElementById("nuevoTitulo").value =
+    recuerdo.titulo || "";
+
+  document.getElementById("nuevoMensaje").value =
+    recuerdo.texto || "";
+
+  mostrarGaleria();
+}
+
+
+// SIGUIENTE FOTO
+
+function siguiente() {
+  if (fotos.length === 0) return;
+
+  indiceActual++;
+
+  if (indiceActual >= fotos.length) {
+    indiceActual = 0;
+  }
+
+  mostrar();
+}
+
+
+// FOTO ANTERIOR
+
+function anterior() {
+  if (fotos.length === 0) return;
+
+  indiceActual--;
+
+  if (indiceActual < 0) {
+    indiceActual = fotos.length - 1;
+  }
+
+  mostrar();
+}
+
+
+// GUARDAR CAMBIOS DE LA FOTO
+
+function guardarTexto() {
+  if (fotos.length === 0) {
+    alert("Primero agrega una foto.");
+    return;
+  }
+
+  fotos[indiceActual].titulo =
+    document.getElementById("nuevoTitulo").value;
+
+  fotos[indiceActual].texto =
+    document.getElementById("nuevoMensaje").value;
+
+  if (guardarFotos()) {
+    mostrar();
+    alert("Cambios guardados 💗");
+  }
+}
+
+
+// AGREGAR FOTO
+
+function agregarFoto() {
+  const selector = document.getElementById("selectorFoto");
+  const archivo = selector.files[0];
+
+  if (!archivo) {
+    alert("Selecciona una foto primero.");
+    return;
+  }
+
+  if (!archivo.type.startsWith("image/")) {
+    alert("Selecciona un archivo de imagen.");
+    return;
+  }
+
+  const lector = new FileReader();
+
+  lector.onload = function(evento) {
+
+    const fotoNueva = {
+      foto: evento.target.result,
+
+      titulo:
+        document.getElementById("tituloFoto").value ||
+        "Nuestro recuerdo 💗",
+
+      texto:
+        document.getElementById("mensajeFoto").value || ""
+    };
+
+    fotos.push(fotoNueva);
+
+    if (!guardarFotos()) {
+      fotos.pop();
+      return;
+    }
+
+    indiceActual = fotos.length - 1;
+
+    selector.value = "";
+
+    document.getElementById("tituloFoto").value = "";
+    document.getElementById("mensajeFoto").value = "";
+
+    mostrar();
+
+    alert("Foto agregada correctamente 💕");
+  };
+
+  lector.readAsDataURL(archivo);
+}
+
+
+// ELIMINAR FOTO ACTUAL
+
+function eliminarFotoActual() {
+  if (fotos.length === 0) {
+    alert("No hay fotos para eliminar.");
+    return;
+  }
+
+  if (!confirm("¿Seguro que quieres eliminar esta foto?")) {
+    return;
+  }
+
+  const eliminada = fotos.splice(indiceActual, 1)[0];
+
+  if (!guardarFotos()) {
+    fotos.splice(indiceActual, 0, eliminada);
+    return;
+  }
+
+  if (indiceActual >= fotos.length) {
+    indiceActual = Math.max(0, fotos.length - 1);
+  }
+
+  mostrar();
+
+  alert("Foto eliminada 💗");
+}
+
+
+// MOSTRAR TODAS LAS FOTOS CON BOTONES PARA ELIMINARLAS
+
+function mostrarGaleria() {
+  const galeria = document.getElementById("galeria");
+  const contador = document.getElementById("contador");
+
+  galeria.innerHTML = "";
+
+  contador.textContent =
+    "Tenemos " + fotos.length + " recuerdos 💗";
+
+  if (fotos.length === 0) {
+    galeria.textContent = "Todavía no hay fotos. 💕";
+    return;
+  }
+
+  fotos.forEach(function(foto, indice) {
+
+    const tarjeta = document.createElement("div");
+    tarjeta.className = "tarjeta";
+
+    const imagen = document.createElement("img");
+    imagen.src = foto.foto;
+    imagen.alt = foto.titulo || "Nuestro recuerdo";
+
+    const titulo = document.createElement("h3");
+    titulo.textContent =
+      foto.titulo || "Nuestro recuerdo 💗";
+
+    const texto = document.createElement("p");
+    texto.textContent = foto.texto || "";
+
+    const botonVer = document.createElement("button");
+    botonVer.textContent = "Ver foto " + (indice + 1);
+
+    botonVer.onclick = function() {
+      indiceActual = indice;
+      mostrar();
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+    };
+
+    const botonEliminar = document.createElement("button");
+
+    botonEliminar.className = "botonEliminar";
+
+    botonEliminar.textContent =
+      "🗑️ Eliminar foto " + (indice + 1);
+
+    botonEliminar.onclick = function() {
+
+      if (!confirm("¿Eliminar la foto " + (indice + 1) + "?")) {
+        return;
+      }
+
+      const eliminada = fotos.splice(indice, 1)[0];
+
+      if (!guardarFotos()) {
+        fotos.splice(indice, 0, eliminada);
+        return;
+      }
+
+      if (indiceActual >= fotos.length) {
+        indiceActual = Math.max(0, fotos.length - 1);
+      }
+
+      mostrar();
+
+      alert("Foto eliminada correctamente 💗");
+    };
+
+    tarjeta.appendChild(imagen);
+    tarjeta.appendChild(titulo);
+    tarjeta.appendChild(texto);
+    tarjeta.appendChild(botonVer);
+    tarjeta.appendChild(botonEliminar);
+
+    galeria.appendChild(tarjeta);
+  });
+}
+
+
+// GUARDAR MENSAJE ESPECIAL
+
+function guardarMensaje() {
+  const texto =
+    document.getElementById("mensajeEspecial").value.trim();
+
+  if (texto === "") {
+    alert("Escribe un mensaje primero.");
+    return;
+  }
+
+  mensajes.push(texto);
+
+  try {
+    localStorage.setItem(
+      "mensajesAmor",
+      JSON.stringify(mensajes)
+    );
+
+  } catch (error) {
+    mensajes.pop();
+    alert("No se pudo guardar el mensaje.");
+    return;
+  }
+
+  document.getElementById("mensajeEspecial").value = "";
+
+  alert("Mensaje guardado 💌");
+}
+
+
+// MOSTRAR Y OCULTAR LOS MENSAJES
+
+function verMensajes() {
+  const contenedor =
+    document.getElementById("mensajesGuardados");
+
+  if (!contenedor.classList.contains("oculto")) {
+    contenedor.classList.add("oculto");
+    return;
+  }
+
+  contenedor.classList.remove("oculto");
+
+  mostrarMensajes();
+}
+
+
+// MOSTRAR MENSAJES NUMERADOS Y CON BOTÓN PARA ELIMINAR
+
+function mostrarMensajes() {
+  const contenedor =
+    document.getElementById("mensajesGuardados");
+
+  contenedor.innerHTML = "";
+
+  if (mensajes.length === 0) {
+    contenedor.textContent =
+      "Todavía no hay mensajes guardados 💗";
+
+    return;
+  }
+
+  mensajes.forEach(function(mensaje, indice) {
+
+    const tarjeta = document.createElement("div");
+    tarjeta.className = "mensajeGuardado";
+
+    const titulo = document.createElement("h3");
+
+    titulo.textContent =
+      "Mensaje " + (indice + 1) + " 💌";
+
+    const texto = document.createElement("p");
+    texto.textContent = mensaje;
+
+    const boton = document.createElement("button");
+
+    boton.className = "botonEliminar";
+
+    boton.textContent =
+      "🗑️ Eliminar mensaje " + (indice + 1);
+
+    boton.onclick = function() {
+
+      if (!confirm(
+        "¿Quieres eliminar el mensaje " +
+        (indice + 1) + "?"
+      )) {
+        return;
+      }
+
+      const eliminado = mensajes.splice(indice, 1)[0];
+
+      try {
+        localStorage.setItem(
+          "mensajesAmor",
+          JSON.stringify(mensajes)
+        );
+
+        mostrarMensajes();
+
+      } catch (error) {
+        mensajes.splice(indice, 0, eliminado);
+
+        alert("No se pudo eliminar el mensaje.");
+      }
+    };
+
+    tarjeta.appendChild(titulo);
+    tarjeta.appendChild(texto);
+    tarjeta.appendChild(boton);
+
+    contenedor.appendChild(tarjeta);
+  });
+}
+
+
+// INICIAR PÁGINA
+
+mostrar();
+
+</script>
+
+</body>
+</html>
+```
